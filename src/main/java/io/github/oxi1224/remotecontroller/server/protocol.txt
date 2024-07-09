@@ -1,0 +1,21 @@
+-- data frame --
+1 bit - fin
+1 bits - rsv1-3
+4 bits - opcode
+
+1 bit - is encryption present
+7 bits - payload len // ~2kb (256B) -- short text
+-- if 126 -> + 16 bits // ~520kb (65.5kB) -- long text
+-- if 127 -> + 24 bits // ~134mb (16.7mB) -- (?) streaming
+-- if encryption -> 32 bit key 
+payload len of bits
+
+-- client connection frame --
+CONNECT opcode (4bit)
+1 bit - encryption
+11 bits - payload
+24 bits - key
+
+payload:
+4 bits -- version
+24 bits -- (?) security key
