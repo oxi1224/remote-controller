@@ -1,5 +1,8 @@
 package io.github.oxi1224.remotecontroller.server;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Frame {
   public final boolean fin;
   public final Opcode opcode;
@@ -73,5 +76,34 @@ public class Frame {
       System.arraycopy(payload, 0, out, idx, payloadLength);
     }
     return out;
+  }
+
+  public static Frame read(InputStream in) throws IOException {
+    byte b = (byte)(in.read()); 
+    boolean fin = (b & 0x80) != 0;
+    Opcode opcode = Opcode.findByValue(b & 0x0F);
+
+    b = (byte)(in.read());
+    boolean encrypted = (0x80 & b) != 0;
+    int payloadLength = (byte)(0x7F & b);
+    int bytesToRead = 0;
+    if (payloadLength == 126) bytesToRead = 2;
+    if (payloadLength == 127) bytesToRead = 8;
+    if (bytesToRead != 0) {
+      byte[] bytes = in.readNBytes(bytesToRead);
+      payloadLength = 0; 
+      for (byte _b : bytes) {
+        payloadLength = (payloadLength << 8) + (_b & 0xFF);
+      }
+    };
+    byte[] encryptionKey = null;
+    if (encrypted) {
+      encryptionKey = new byte[4];
+      in.read(encryptionKey, 0, 4);
+    }
+    byte[] payload = new byte[payloadLength];
+    in.read(payload, 0, payloadLength);
+    /// TODO:  Encryption
+    return new Frame(fin, opcode, encrypted, payloadLength, encryptionKey, payload);
   }
 }
