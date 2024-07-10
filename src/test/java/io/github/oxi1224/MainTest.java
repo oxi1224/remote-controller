@@ -1,4 +1,4 @@
-package io.github.oxi1224.remotecontroller;
+package io.github.oxi1224;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;

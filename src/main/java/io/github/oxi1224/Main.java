@@ -1,4 +1,4 @@
-package io.github.oxi1224.remotecontroller;
+package io.github.oxi1224;
 
 public class Main {
   public String test() {
