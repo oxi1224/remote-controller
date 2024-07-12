@@ -54,7 +54,7 @@ public class Logger {
     write("[INFO] " + text, ANSI_WHITE);
   }
 
-  public void info(String text, Object... fargs) {
+  public void infof(String text, Object... fargs) {
     info(String.format(text, fargs)); 
   }
 
@@ -62,7 +62,7 @@ public class Logger {
     write("[DEBUG] " + text, ANSI_GRAY);
   }
 
-  public void debug(String text, Object... fargs) {
+  public void debugf(String text, Object... fargs) {
     debug(String.format(text, fargs)); 
   }
 
@@ -70,7 +70,7 @@ public class Logger {
     write("[WARN] " + text, ANSI_YELLOW);
   }
 
-  public void warn(String text, Object... fargs) {
+  public void warnf(String text, Object... fargs) {
     warn(String.format(text, fargs));
   }
 
@@ -103,8 +103,12 @@ public class Logger {
     error("", throwable);
   }
 
-  public void error(String text, Object... fargs) {
+  public void errorf(String text, Object... fargs) {
     error(String.format(text, fargs)); 
+  }
+
+  public void errorf(String text, Throwable throwable, Object... fargs) {
+    error(String.format(text, fargs), throwable);
   }
 
   private synchronized void write(String text, String ansiColor) {
