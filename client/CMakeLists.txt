@@ -1,23 +1,28 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.24)
 
 project(remote-controller-client)
 
 option(DEV_BUILD "Enable development build" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB SRC "src/*.cpp")
 file(GLOB INCLUDE_SRC "include/*.hpp")
 
-add_executable(${CMAKE_PROJECT_NAME} "main.cpp" ${SRC} ${INCLUDE_SRC})
+add_executable(${CMAKE_PROJECT_NAME} ${SRC} ${INCLUDE_SRC})
+
+if (WIN32) 
+  target_link_libraries(${CMAKE_PROJECT_NAME} ws2_32)
+endif ()
 
 if(DEV_BUILD)
   include(FetchContent)
   FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG       "v1.15.0" 
   )
 
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
