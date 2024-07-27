@@ -4,11 +4,13 @@
 #include <iostream>
 #include <logger.hpp>
 
-Logger::Logger() {
+Logger::Logger(std::string logID) {
+  m_logID = logID;
   if (log_to_file == true) m_file = std::ofstream(m_logFileName, std::fstream::app);
 }
 
-Logger::Logger(std::string filename) {
+Logger::Logger(std::string logID, std::string filename) {
+  m_logID = logID;
   m_logFileName = filename;
   if (log_to_file == true) m_file = std::ofstream(m_logFileName, std::fstream::app);
 }
@@ -46,16 +48,17 @@ std::string Logger::getTimeStamp() {
   return timestamp;
 }
 
-void Logger::write(std::string txt, std::string ansi_color) {
-  std::cout << ANSI_GREEN << getTimeStamp() << ANSI_RESET << ansi_color << txt << ANSI_RESET << std::endl;
+void Logger::write(std::string txt, std::string ansi_color, std::string log_type) {
+  std::string log_info = "[" + m_logID + "/" + log_type + "] ";
+  std::cout << ANSI_GREEN << getTimeStamp() << ANSI_RESET << ansi_color << log_info << txt << ANSI_RESET << std::endl;
   if (log_to_file && !m_file.is_open()) {
     m_file = std::ofstream(m_logFileName, std::fstream::app);
   }
-  if (log_to_file) m_file << getTimeStamp() << txt << std::endl;
+  if (log_to_file) m_file << getTimeStamp() << log_info << txt << std::endl;
 }
 
 void Logger::log(std::string str) {
-  write("[INFO] " + str, ANSI_WHITE);
+  write(str, ANSI_WHITE, "INFO");
 }
 
 template<typename... Args>
@@ -64,7 +67,7 @@ void Logger::logf(std::string fmt, Args &&...args) {
 }
 
 void Logger::warn(std::string str) {
-  write("[WARN] " + str, ANSI_YELLOW);
+  write(str, ANSI_YELLOW, "WARN");
 }
 
 template<typename... Args>
@@ -73,7 +76,7 @@ void Logger::warnf(std::string fmt, Args &&...args) {
 }
 
 void Logger::error(std::string str) {
-  write("[ERROR] " + str, ANSI_RED);
+  write(str, ANSI_RED, "ERROR");
 }
 
 template<typename... Args>
@@ -82,7 +85,7 @@ void Logger::errorf(std::string fmt, Args &&...args) {
 }
 
 void Logger::debug(std::string str) {
-  write("[DEBUG] " + str, ANSI_GRAY);
+  write(str, ANSI_GRAY, "DEBUG");
 }
 
 template<typename... Args>

@@ -13,8 +13,8 @@ const std::string ANSI_WHITE = "\033[37m";
 class Logger {
   public:
   inline static bool log_to_file = true;
-  Logger();
-  Logger(std::string filename);
+  Logger(std::string logID);
+  Logger(std::string logID, std::string filename);
   ~Logger();
 
   template<typename... Args>
@@ -31,8 +31,9 @@ class Logger {
   void debug(std::string str);
 
   private:
-  void write(std::string str, std::string ansi_timestamp);
+  void write(std::string str, std::string ansi_timestamp, std::string log_type);
   std::string getTimeStamp();
   std::string m_logFileName = "log.txt";
+  std::string m_logID;
   std::ofstream m_file;
 };

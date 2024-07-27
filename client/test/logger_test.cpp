@@ -4,7 +4,7 @@
 #include <logger.hpp>
 
 TEST(LoggerTest, MainTest) {
-  Logger l;
+  Logger l("LoggerTest");
   l.log("Hello World");
   std::ifstream logFile("log.txt", std::ios_base::app);
   std::string contents(
