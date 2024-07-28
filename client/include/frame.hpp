@@ -2,6 +2,7 @@
 
 #include "opcode.hpp"
 #include "logger.hpp"
+#include <array>
 #include <vector>
 #include <winsock2.h>
 
@@ -11,19 +12,24 @@ class Frame {
   Opcode opcode;
   bool masked;
   int payloadLength;
-  byte maskingKey[4];
+  std::array<byte, 4> maskingKey;
   std::vector<byte> payload;
 
   Frame(
     bool fin,
     Opcode opcode,
+    bool masked,
     int payloadLength,
-    byte maskingKey[4],
+    std::array<byte, 4> maskingKey,
     std::vector<byte> payload
   );
 
   static Frame read(SOCKET* s);
-  std::vector<byte> getBytes();
+  static std::array<byte, 4> getMaskingKey();
+  static std::string getConnectionKey();
+  std::vector<char> getBytes();
+  bool validMaskingKey(std::array<byte, 4> key);
+  void sendFrame(SOCKET* s);
 
   private:
   static int recvData(SOCKET* s, char *buf, int len);

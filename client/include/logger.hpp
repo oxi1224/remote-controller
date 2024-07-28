@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <string>
 #include <fstream>
 
@@ -18,20 +19,28 @@ class Logger {
   ~Logger();
 
   template<typename... Args>
-  void logf(std::string fmt, Args &&...args);
-  void log(std::string str);
+  void logf(const std::format_string<Args...> fmt, Args&&...args) {
+    log(std::vformat(fmt.get(), std::make_format_args(args...)));
+  }
+  void log(const std::string& str);
   template<typename... Args>
-  void warnf(std::string fmt, Args &&...args);
-  void warn(std::string str);
+  void warnf(const std::format_string<Args...> fmt, Args&&...args) {
+    warn(std::vformat(fmt.get(), std::make_format_args(args...)));
+  }
+  void warn(const std::string& str);
   template<typename... Args>
-  void errorf(std::string fmt, Args &&...args);
-  void error(std::string str);
+  void errorf(const std::format_string<Args...> fmt, Args&&...args) {
+    error(std::vformat(fmt.get(), std::make_format_args(args...)));
+  }
+  void error(const std::string& str);
   template<typename... Args>
-  void debugf(std::string fmt, Args &&...args);
-  void debug(std::string str);
+  void debugf(const std::format_string<Args...> fmt, Args&&...args) {
+    debug(std::vformat(fmt.get(), std::make_format_args(args...)));
+  }
+  void debug(const std::string& str);
 
   private:
-  void write(std::string str, std::string ansi_timestamp, std::string log_type);
+  void write(const std::string& str, const std::string& ansi_timestamp, const std::string& log_type);
   std::string getTimeStamp();
   std::string m_logFileName = "log.txt";
   std::string m_logID;
