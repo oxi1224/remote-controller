@@ -43,6 +43,7 @@ public class Server extends java.net.ServerSocket {
     InputStream in = s.getInputStream();
     OutputStream out = s.getOutputStream();
     startTimeout(10_000, s);
+    logger.info("Reading frame");
     Frame f = Frame.read(in);
     timer.cancel();
     int clientVersion = f.payload[0];
@@ -54,7 +55,7 @@ public class Server extends java.net.ServerSocket {
     byte[] keyBytes = new byte[16]; 
     System.arraycopy(f.payload, 1, keyBytes, 0, keyBytes.length);
     String key = new String(keyBytes);
-    byte[] sha1 = new byte[0];
+    byte[] sha1 = new byte[0]; 
     try {
       sha1 = MessageDigest.getInstance("SHA-1")
       .digest((key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")

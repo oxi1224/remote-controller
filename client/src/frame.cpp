@@ -2,6 +2,7 @@
 #include "opcode.hpp"
 #include <array>
 #include <cstdlib>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ Frame::Frame(
   bool masked,
   int payloadLength,
   std::array<byte, 4> maskingKey,
-  std::vector<byte> payload
+  std::vector<char> payload
 ) {
   this->fin = fin;
   this->opcode = opcode;
@@ -59,6 +60,10 @@ std::string Frame::getConnectionKey() {
   return out;
 }
 
+std::string Frame::getPayloadString() {
+  return std::string(payload.begin(), payload.end());
+}
+
 Frame Frame::read(SOCKET* s) {
   if (s == nullptr || *s == INVALID_SOCKET) {
     log.error("An invalid socket has been provied to Frame.read()");
@@ -67,25 +72,25 @@ Frame Frame::read(SOCKET* s) {
   char info_buf[2];
   int result = recvData(s, info_buf, sizeof(info_buf));
 
-  byte b = info_buf[0];
+  char b = info_buf[0];
   boolean fin = (b & 0x80) != 0;
   Opcode opcode = toOpcode(b & 0x0F);
   b = info_buf[1];
   boolean masked = (b & 0x80) != 0;
-  int payloadLength = b & 0x0F;
+  int payloadLength = b & 0x7F;
   int bytesToRead = 0;
 
   if (payloadLength == 126) bytesToRead = 2;
   if (payloadLength == 127) bytesToRead = 8;
   if (bytesToRead != 0) {
     char payload_len_buf[bytesToRead];
-    recvData(s, payload_len_buf, sizeof(payload_len_buf));
+    recvData(s, payload_len_buf, strlen(payload_len_buf));
     payloadLength = 0;
     for (int i = 0; i < bytesToRead; i++) {
       payloadLength = (payloadLength << 8) + (payload_len_buf[i] & 0xFF);
     }
   }
-  
+
   std::array<byte, 4> maskingKey;
   if (masked) {
     char mask_buf[4];
@@ -98,7 +103,7 @@ Frame Frame::read(SOCKET* s) {
   char payload_buf[payloadLength];
   recvData(s, payload_buf, payloadLength);
   std::size_t size = sizeof(payload_buf) / sizeof(payload_buf[0]);
-  std::vector<byte> payload(payload_buf, payload_buf + size);
+  std::vector<char> payload(payload_buf, payload_buf + size);
   if (masked) {
     for (int i = 0; i < payloadLength; i++) {
       payload[i] = payload[i] ^ maskingKey[i % 4];
@@ -120,7 +125,7 @@ std::vector<char> Frame::getBytes() {
   if (masked && !validMaskingKey(maskingKey)) {
     log.error("Masked set to true but frame does not contain valid maskingKey");
     throw new std::invalid_argument("Masked set to true but frame does not contain valid maskingKey");
-  } else {
+  } else if (masked) {
     calcLength += 4;
   }
 
@@ -170,5 +175,5 @@ std::vector<char> Frame::getBytes() {
 void Frame::sendFrame(SOCKET* s) {
   std::vector<char> outvec = getBytes();
   char* outbuf = outvec.data();
-  send(*s, outbuf, sizeof(outbuf), 0);
+  send(*s, outbuf, strlen(outbuf), 0);
 }

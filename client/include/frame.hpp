@@ -13,7 +13,7 @@ class Frame {
   bool masked;
   int payloadLength;
   std::array<byte, 4> maskingKey;
-  std::vector<byte> payload;
+  std::vector<char> payload;
 
   Frame(
     bool fin,
@@ -21,13 +21,14 @@ class Frame {
     bool masked,
     int payloadLength,
     std::array<byte, 4> maskingKey,
-    std::vector<byte> payload
+    std::vector<char> payload
   );
 
   static Frame read(SOCKET* s);
   static std::array<byte, 4> getMaskingKey();
   static std::string getConnectionKey();
   std::vector<char> getBytes();
+  std::string getPayloadString();
   bool validMaskingKey(std::array<byte, 4> key);
   void sendFrame(SOCKET* s);
 

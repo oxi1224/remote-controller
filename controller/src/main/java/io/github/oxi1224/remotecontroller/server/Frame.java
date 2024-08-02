@@ -67,7 +67,7 @@ public class Frame {
     }
     if (masked) {
       for (int i = 0; i < 4; i++) {
-        out[idx + i] = maskingKey[i];
+        out[idx] = maskingKey[i];
         idx++;
       }
       /// TODO: masking
