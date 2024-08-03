@@ -27,12 +27,13 @@ class Frame {
   static Frame read(SOCKET* s);
   static std::array<byte, 4> getMaskingKey();
   static std::string getConnectionKey();
+  static Frame getGeneric(Opcode opcode, bool masked);
+  static Frame getClose(std::string reason, bool masked);
   std::vector<char> getBytes();
   std::string getPayloadString();
   bool validMaskingKey(std::array<byte, 4> key);
-  void sendFrame(SOCKET* s);
 
   private:
   static int recvData(SOCKET* s, char *buf, int len);
-  inline static Logger log = Logger("Frame");
+  inline static Logger logger = Logger("Frame");
 };

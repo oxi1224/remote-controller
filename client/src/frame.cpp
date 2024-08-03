@@ -26,9 +26,9 @@ Frame::Frame(
 
 int Frame::recvData(SOCKET *s, char* buf, int len) {
   int result = recv(*s, buf, len, 0);
-  if (result <= 0) {
-    log.error("Connection closed while trying to read from socket");
-    throw new std::runtime_error("Connection closed while reading");
+  if (result == SOCKET_ERROR) {
+    logger.errorf("recv returned with error {}", WSAGetLastError());
+    throw new std::runtime_error("recv returned with an error");
   }
   return result;
 }
@@ -66,7 +66,7 @@ std::string Frame::getPayloadString() {
 
 Frame Frame::read(SOCKET* s) {
   if (s == nullptr || *s == INVALID_SOCKET) {
-    log.error("An invalid socket has been provied to Frame.read()");
+    logger.error("An invalid socket has been provied to Frame.read()");
     throw new std::invalid_argument("Provided socket is invalid");
   }
   char info_buf[2];
@@ -115,7 +115,7 @@ Frame Frame::read(SOCKET* s) {
 
 std::vector<char> Frame::getBytes() {
   if (payloadLength != payload.size()) {
-    log.error("payload.size() does not match payloadLength when trying to call getBytes()");
+    logger.error("payload.size() does not match payloadLength when trying to call getBytes()");
     throw new std::invalid_argument("payload.size() does not match payloadLength when trying to call getBytes()");
   }
   int calcLength = 2 + payloadLength; // 2 = min len;
@@ -123,7 +123,7 @@ std::vector<char> Frame::getBytes() {
   else if (payloadLength > 65535) calcLength += 9; // 1 byte + next 8
 
   if (masked && !validMaskingKey(maskingKey)) {
-    log.error("Masked set to true but frame does not contain valid maskingKey");
+    logger.error("Masked set to true but frame does not contain valid maskingKey");
     throw new std::invalid_argument("Masked set to true but frame does not contain valid maskingKey");
   } else if (masked) {
     calcLength += 4;
@@ -172,8 +172,15 @@ std::vector<char> Frame::getBytes() {
   return out;
 }
 
-void Frame::sendFrame(SOCKET* s) {
-  std::vector<char> outvec = getBytes();
-  char* outbuf = outvec.data();
-  send(*s, outbuf, strlen(outbuf), 0);
+Frame Frame::getGeneric(Opcode opcode, bool masked) {
+  std::array<byte, 4> maskingKey;
+  if (masked) maskingKey = getMaskingKey();
+  return Frame(true, opcode, masked, 0, maskingKey, std::vector<char>());
+}
+
+Frame Frame::getClose(std::string reason, bool masked) {
+  std::vector<char> payload(reason.begin(), reason.end());
+  std::array<byte, 4> maskingKey;
+  if (masked) maskingKey = getMaskingKey();
+  return Frame(true, Opcode::CLOSE, masked, payload.size(), maskingKey, payload);
 }

@@ -38,6 +38,7 @@ public:
     void update(const std::string &s);
     void update(std::istream &is);
     std::string final();
+    std::string finalStringBytes();
     static std::string from_file(const std::string &filename);
 
 private:
@@ -321,6 +322,17 @@ inline std::string SHA1::final()
     return result.str();
 }
 
+// Returns the string that is represented by hex string from final()
+inline std::string SHA1::finalStringBytes() {
+  std::string hexString = final();
+  std::string sha1;
+  for (int i = 0; i < hexString.length(); i += 2) {
+    std::string b = hexString.substr(i, 2);
+    char c = (char)strtol(b.c_str(), nullptr, 16);
+    sha1 += c;
+  }
+  return sha1;
+}
 
 inline std::string SHA1::from_file(const std::string &filename)
 {
